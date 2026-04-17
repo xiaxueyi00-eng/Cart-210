@@ -97,19 +97,17 @@ function draw() {
     }
 
     // ===== Explosion Stage =====
+    // ===== Explosion Stage =====
     if (state === "explode") {
 
         let currentLikes = floor(maxLikes + random(500, 2000));
 
+        // Stable text (IMPORTANT FIX)
         fill(255, 50, 50);
-        textSize(80 + random(-30, 30));
+        textSize(80);
+        text(`❤️ ${currentLikes}`, width / 2, height / 2);
 
-        text(
-            `❤️ ${currentLikes}`,
-            width / 2,
-            height / 2
-        );
-
+        // Particle burst
         if (particles.length < MAX_PARTICLES) {
             for (let i = 0; i < 15; i++) {
                 particles.push(
@@ -132,6 +130,7 @@ function draw() {
             }
         }
 
+        // Explosion FX (stable position)
         if (frameCount % 2 === 0) {
             createExplosion(
                 random(width),
