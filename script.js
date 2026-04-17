@@ -9,9 +9,11 @@ let bigHeart = { size: 0, alpha: 255, exploding: false };
 let state = "bigHeart";
 
 let explosionParticles = [];
+let heartImg;
 
 function preload() {
     bg = loadImage("image/bg.png");
+    heartImg = loadImage("image/heart.png");
 }
 
 function setup() {
@@ -24,7 +26,6 @@ function setup() {
 function draw() {
 
     if (state === "explode") {
-
         if (frameCount % 2 === 0) {
             background(255, 200, 200);
         } else {
@@ -33,15 +34,20 @@ function draw() {
     } else {
         background(0);
     }
+
     image(bg, 0, 0, width, height);
 
 
     if (state === "bigHeart") {
-        fill(255, 0, 0, bigHeart.alpha);
-        drawHeart(width / 2, height / 2, bigHeart.size);
+
+        tint(255, bigHeart.alpha);
+        imageMode(CENTER);
+        image(heartImg, width / 2, height / 2, bigHeart.size, bigHeart.size);
+        noTint();
 
         if (!bigHeart.exploding) {
             bigHeart.size += 5;
+
             if (bigHeart.size >= 150) {
                 bigHeart.exploding = true;
                 createExplosion(width / 2, height / 2, 30);
@@ -50,15 +56,17 @@ function draw() {
             bigHeart.alpha -= 10;
             updateExplosion();
             drawExplosion();
+
             if (bigHeart.alpha <= 0) {
                 state = "growing";
                 startTime = millis();
             }
         }
+
         return;
     }
 
-    // ---------------- 点赞增加阶段 ----------------
+
     if (state === "growing") {
         let elapsed = millis() - startTime;
         let t = constrain(elapsed / (duration * 0.8), 0, 1);
@@ -69,8 +77,7 @@ function draw() {
         text(`❤️ ${currentLikes}`, width / 2, height / 2);
 
         if (particles.length < MAX_PARTICLES) {
-            let newParticles = min(5, MAX_PARTICLES - particles.length);
-            for (let i = 0; i < newParticles; i++) {
+            for (let i = 0; i < 5; i++) {
                 particles.push(new LikeParticle(random(width), height));
             }
         }
@@ -88,21 +95,24 @@ function draw() {
             state = "explode";
             startTime = millis();
         }
+
         return;
     }
 
     if (state === "explode") {
 
         let currentLikes = floor(maxLikes + random(500, 2000));
+
         fill(255, 50, 50);
         textSize(80 + random(-30, 30));
-        text(`❤️ ${currentLikes}`, width / 2 + random(-50, 50), height / 2 + random(-30, 30));
+        text(`❤️ ${currentLikes}`,
+            width / 2 + random(-50, 50),
+            height / 2 + random(-30, 30)
+        );
 
-        // 大量爆炸粒子
         if (particles.length < MAX_PARTICLES) {
-            let newParticles = min(15, MAX_PARTICLES - particles.length);
-            for (let i = 0; i < newParticles; i++) {
-                particles.push(new LikeParticle(random(width), random(height / 2, height), true));
+            for (let i = 0; i < 15; i++) {
+                particles.push(new LikeParticle(random(width), random(height), true));
             }
         }
 
@@ -113,9 +123,8 @@ function draw() {
             if (p.alpha <= 0) particles.splice(i, 1);
         }
 
-        // 彩色粒子额外爆炸
         if (frameCount % 2 === 0) {
-            createExplosion(random(width), random(height / 2, height / 1.2), 5);
+            createExplosion(random(width), random(height), 5);
         }
 
         updateExplosion();
@@ -123,7 +132,71 @@ function draw() {
     }
 }
 
-// ----------------- 爱心粒子 -----------------
+if (state === "growing") {
+    let elapsed = millis() - startTime;
+    let t = constrain(elapsed / (duration * 0.8), 0, 1);
+    let currentLikes = floor(maxLikes * pow(t, 2));
+
+    fill(255);
+    textSize(80);
+    text(`❤️ ${currentLikes}`, width / 2, height / 2);
+
+    if (particles.length < MAX_PARTICLES) {
+        let newParticles = min(5, MAX_PARTICLES - particles.length);
+        for (let i = 0; i < newParticles; i++) {
+            particles.push(new LikeParticle(random(width), height));
+        }
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.update();
+        p.show();
+        if (p.y < -50 || p.alpha <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+
+    if (elapsed >= duration * 0.8) {
+        state = "explode";
+        startTime = millis();
+    }
+    return;
+}
+
+if (state === "explode") {
+
+    let currentLikes = floor(maxLikes + random(500, 2000));
+    fill(255, 50, 50);
+    textSize(80 + random(-30, 30));
+    text(`❤️ ${currentLikes}`, width / 2 + random(-50, 50), height / 2 + random(-30, 30));
+
+
+    if (particles.length < MAX_PARTICLES) {
+        let newParticles = min(15, MAX_PARTICLES - particles.length);
+        for (let i = 0; i < newParticles; i++) {
+            particles.push(new LikeParticle(random(width), random(height / 2, height), true));
+        }
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.update();
+        p.show();
+        if (p.alpha <= 0) particles.splice(i, 1);
+    }
+
+    // 彩色粒子额外爆炸
+    if (frameCount % 2 === 0) {
+        createExplosion(random(width), random(height / 2, height / 1.2), 5);
+    }
+
+    updateExplosion();
+    drawExplosion();
+}
+
+
+
 class LikeParticle {
     constructor(x, y, explode = false) {
         this.x = x;
