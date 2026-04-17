@@ -10,142 +10,140 @@ let state = "bigHeart";
 
 let explosionParticles = [];
 
-let clickExplosions = [];
+
 
 function preload() {
     bg = loadImage("image/bg.png");
 }
 
-function mousePressed() {
-    let count = random(20, 60);
-    createExplosion(mouseX, mouseY, count);
+
+
+
+function setup() {
+    createCanvas(windowWidth, windowHeight);
+    pixelDensity(1);
+    textAlign(CENTER, CENTER);
+    imageMode(CENTER);
+    textFont('Arial');
+    startTime = millis();
 }
 
 function draw() {
     clear();
+    // ===== Big Heart Stage =====
+    if (state === "bigHeart") {
 
+        // center anchor (IMPORTANT FIX)
+        let cx = width / 2;
+        let cy = height / 2;
 
-    // Increase heart size over time
-    if (!bigHeart.exploding) {
-        bigHeart.size += 5;
+        if (!bigHeart.exploding) {
+            bigHeart.size += 5;
 
-        // Trigger explosion when reaching threshold
-        if (bigHeart.size >= 150) {
-            bigHeart.exploding = true;
-            createExplosion(width / 2, height / 2, 30);
+            if (bigHeart.size >= 150) {
+                bigHeart.exploding = true;
+                createExplosion(cx, cy, 30);
+            }
+
+        } else {
+
+            bigHeart.alpha -= 10;
+
+            updateExplosion();
+            drawExplosion();
+
+            if (bigHeart.alpha <= 0) {
+                state = "growing";
+                startTime = millis();
+            }
         }
 
-    } else {
+        return;
+    }
 
-        // Fade out heart and update explosion particles
-        bigHeart.alpha -= 10;
+    // ===== Growing Stage =====
+    if (state === "growing") {
+
+        let elapsed = millis() - startTime;
+        let t = constrain(elapsed / (duration * 0.8), 0, 1);
+        let currentLikes = floor(maxLikes * pow(t, 2));
+
+        fill(255);
+        textSize(80);
+        text(`❤️ ${currentLikes}`, width / 2, height / 2);
+
+        if (particles.length < MAX_PARTICLES) {
+            for (let i = 0; i < 5; i++) {
+                particles.push(new LikeParticle(random(width), height));
+            }
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.update();
+            p.show();
+
+            if (p.y < -50 || p.alpha <= 0) {
+                particles.splice(i, 1);
+            }
+        }
+
+        if (elapsed >= duration * 0.8) {
+            state = "explode";
+            startTime = millis();
+        }
+
+        return;
+    }
+
+    // ===== Explosion Stage =====
+    if (state === "explode") {
+
+        let currentLikes = floor(maxLikes + random(500, 2000));
+
+        fill(255, 50, 50);
+        textSize(80 + random(-30, 30));
+
+        text(
+            `❤️ ${currentLikes}`,
+            width / 2,
+            height / 2
+        );
+
+        if (particles.length < MAX_PARTICLES) {
+            for (let i = 0; i < 15; i++) {
+                particles.push(
+                    new LikeParticle(
+                        random(width),
+                        random(height / 2, height),
+                        true
+                    )
+                );
+            }
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            let p = particles[i];
+            p.update();
+            p.show();
+
+            if (p.alpha <= 0) {
+                particles.splice(i, 1);
+            }
+        }
+
+        if (frameCount % 2 === 0) {
+            createExplosion(
+                random(width),
+                random(height / 2, height),
+                5
+            );
+        }
 
         updateExplosion();
         drawExplosion();
-
-        // Switch to next state when fully faded
-        if (bigHeart.alpha <= 0) {
-            state = "growing";
-            startTime = millis();
-        }
     }
-
-    return;
 }
-
-// =====  Growing likes stage =====
-if (state === "growing") {
-
-    // Calculate animation progress
-    let elapsed = millis() - startTime;
-    let t = constrain(elapsed / (duration * 0.8), 0, 1);
-
-    // Simulated like counter (easing effect)
-    let currentLikes = floor(maxLikes * pow(t, 2));
-
-    fill(255);
-    textSize(80);
-    text(`❤️ ${currentLikes}`, width / 2, height / 2);
-
-    // Spawn floating heart particles
-    if (particles.length < MAX_PARTICLES) {
-        for (let i = 0; i < 5; i++) {
-            particles.push(new LikeParticle(random(width), height));
-        }
-    }
-
-    // Update and remove particles
-    for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
-        p.update();
-        p.show();
-
-        if (p.y < -50 || p.alpha <= 0) {
-            particles.splice(i, 1);
-        }
-    }
-
-    // Transition to explosion stage
-    if (elapsed >= duration * 0.8) {
-        state = "explode";
-        startTime = millis();
-    }
-
-    return;
-}
-
-// ===== 4. Explosion stage =====
-if (state === "explode") {
-
-    // Randomized like count for chaos effect
-    let currentLikes = floor(maxLikes + random(500, 2000));
-
-    fill(255, 50, 50);
-    textSize(80 + random(-30, 30));
-
-    text(
-        `❤️ ${currentLikes}`,
-        width / 2 + random(-50, 50),
-        height / 2 + random(-30, 30)
-    );
-
-    // Spawn more intense particles
-    if (particles.length < MAX_PARTICLES) {
-        for (let i = 0; i < 15; i++) {
-            particles.push(
-                new LikeParticle(
-                    random(width),
-                    random(height / 2, height),
-                    true
-                )
-            );
-        }
-    }
-
-    // Update particles
-    for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
-        p.update();
-        p.show();
-
-        if (p.alpha <= 0) {
-            particles.splice(i, 1);
-        }
-    }
-
-    // Random explosion bursts
-    if (frameCount % 2 === 0) {
-        createExplosion(
-            random(width),
-            random(height / 2, height / 1.2),
-            5
-        );
-    }
-
-    updateExplosion();
-    drawExplosion();
-}
-
 class LikeParticle {
     constructor(x, y, explode = false) {
         this.x = x;
