@@ -4,10 +4,8 @@ let duration = 10000;
 let maxLikes = 1000;
 let particles = [];
 let MAX_PARTICLES = 400;
-
 let bigHeart = { size: 0, alpha: 255, exploding: false };
 let state = "bigHeart";
-
 let explosionParticles = [];
 
 
@@ -15,9 +13,6 @@ let explosionParticles = [];
 function preload() {
     bg = loadImage("image/bg.png");
 }
-
-
-
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -96,7 +91,7 @@ function draw() {
         return;
     }
 
-    // ===== Explosion Stage =====
+
     // ===== Explosion Stage =====
     if (state === "explode") {
 
@@ -205,13 +200,6 @@ function drawExplosion() {
 }
 
 
-function drawHeart(x, y, size) {
-    beginShape();
-    vertex(x, y);
-    bezierVertex(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
-    bezierVertex(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
-    endShape(CLOSE);
-}
 
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
