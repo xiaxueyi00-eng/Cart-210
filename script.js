@@ -3,7 +3,7 @@ let startTime;
 let duration = 10000;
 let maxLikes = 1000;
 let particles = [];
-let MAX_PARTICLES = 300;
+let MAX_PARTICLES = 400;
 
 let bigHeart = { size: 0, alpha: 255, exploding: false };
 let state = "bigHeart";
@@ -73,7 +73,7 @@ function draw() {
         text(`❤️ ${currentLikes}`, width / 2, height / 2);
 
         if (particles.length < MAX_PARTICLES) {
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 10; i++) {
                 particles.push(new LikeParticle(random(width), height));
             }
         }
@@ -109,7 +109,7 @@ function draw() {
 
         // Particle burst
         if (particles.length < MAX_PARTICLES) {
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 30; i++) {
                 particles.push(
                     new LikeParticle(
                         random(width),
@@ -131,7 +131,7 @@ function draw() {
         }
 
         // Explosion FX (stable position)
-        if (frameCount % 2 === 0) {
+        if (frameCount % 1 === 0) {
             createExplosion(
                 random(width),
                 random(height / 2, height),
